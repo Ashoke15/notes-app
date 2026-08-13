@@ -17,6 +17,14 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			fmt.Println("user click",msg.String())
+			return m, tea.Quit
+		}
+	}
 	return m, nil
 }
 

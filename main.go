@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type model struct {
-	msg string
+	newFileInput textinput.Model
+	inputVisible bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -17,24 +20,61 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
-			fmt.Println("user click",msg.String())
 			return m, tea.Quit
+		case "ctrl+n":
+			m.inputVisible = true
+			return m, nil
 		}
 	}
-	return m, nil
+
+	if m.inputVisible {
+		m.newFileInput, cmd = m.newFileInput.Update(msg)
+	}
+
+	return m, cmd
 }
 
 func (m model) View() tea.View {
-	return tea.NewView(m.msg)
+
+	var style = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("16")).
+		Background(lipgloss.Color("205")).
+		PaddingLeft(2).
+		PaddingRight(2)
+
+	welcome := style.Render("Welcome to Totion 🧠")
+
+	help := "Ctrl+N: new file . Ctrl+L: list . Esc: back/save . Ctrl+S: save . Ctrl+Q: quit"
+
+	view := ""
+	if m.inputVisible {
+		view = m.newFileInput.View()
+	}
+
+	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)
+
+	return tea.NewView(prit)
 }
 
 func initializeModel() model {
+
+	//initialise new file input
+	ti := textinput.New()
+	ti.Placeholder = "What would like to call it"
+	ti.SetVirtualCursor(false)
+	ti.Focus()
+	ti.CharLimit = 156
+	ti.SetWidth(50)
+
 	return model{
-		msg: "🍆",
+		newFileInput: ti,
+		inputVisible: false,
 	}
 }
 

@@ -9,6 +9,18 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+var (
+	cursorColor = lipgloss.Color("205") 
+	
+	placeholderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
+
+	focusedPlaceholderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99"))
+
+	focusedPromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+	textStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("229"))
+)
+
 type model struct {
 	newFileInput textinput.Model
 	inputVisible bool
@@ -71,6 +83,15 @@ func initializeModel() model {
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.SetWidth(50)
+
+	s := ti.Styles()
+	s.Focused.Text = textStyle
+	s.Blurred.Text = textStyle
+	s.Cursor.Color = cursorColor
+	s.Focused.Placeholder = focusedPlaceholderStyle
+	s.Focused.Prompt = focusedPromptStyle
+	s.Blurred.Placeholder = placeholderStyle
+	ti.SetStyles(s)
 
 	return model{
 		newFileInput: ti,

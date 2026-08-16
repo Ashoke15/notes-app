@@ -111,6 +111,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+l":
 			//todo: showing list
+			noteList := listFile()
+			m.list.SetItems(noteList)
 			m.showingList = true
 			return m, nil
 		case "ctrl+n":
@@ -148,7 +150,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.currentFile != nil {
 				break
 			}
-			//todo: creat folder
+
+			if m.showingList {
+				item, ok := m.list.SelectedItem().(item)
+				if ok {
+					filepath := fmt.Sprintf("%s/%s", vaultDir, item.title)
+					content, err := os.ReadFile(filepath)
+					if err != nil {
+						log.Printf("Error reading file: %v", err)
+						return m, nil
+					}
+
+					m.noteTextArea.SetValue(string(content))
+
+					f, err := os.OpenFile(filepath, os.O_RDWR, 0644)
+					if err != nil {
+						log.Printf("error reading file: %v", err)
+					}
+
+					m.currentFile = f
+					m.showingList = false
+
+				}
+
+				return m, nil
+			}
+
 			fileName := m.newFileInput.Value()
 			if fileName != "" {
 				filepath := fmt.Sprintf("%s/%s.md", vaultDir, fileName)

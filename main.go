@@ -109,14 +109,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+
+		case "esc":
+			if m.inputVisible {
+				m.inputVisible = false
+			}
+
+			if m.currentFile != nil {
+				m.noteTextArea.SetValue("")
+				m.currentFile = nil
+			}
+
+			if m.showingList {
+				if m.list.FilterState() == list.Filtering {
+					break
+				}
+
+				m.showingList = false
+			}
+
+			return m, nil
+
 		case "ctrl+l":
 			//todo: showing list
 			noteList := listFile()
 			m.list.SetItems(noteList)
 			m.showingList = true
 			return m, nil
+
 		case "ctrl+n":
 			m.inputVisible = true
+			return m, nil
+
 		case "ctrl+s":
 			if m.currentFile == nil {
 				break
@@ -223,7 +247,7 @@ func (m model) View() tea.View {
 
 	welcome := style.Render("Welcome to Totion 🧠")
 
-	help := "Ctrl+N: new file . Ctrl+L: list . Esc: back/save . Ctrl+S: save . Ctrl+Q: quit"
+	help := "Ctrl+N: new file . Ctrl+L: list . Esc: back . Ctrl+S: save . Ctrl+Q: quit"
 
 	view := ""
 	if m.inputVisible {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -34,11 +35,46 @@ func init() {
 	vaultDir = fmt.Sprintf("%s/.totion", homedir)
 }
 
+type styles struct {
+	app           lipgloss.Style
+	title         lipgloss.Style
+	statusMessage lipgloss.Style
+}
+
+func newStyles(darkBG bool) styles {
+	lightDark := lipgloss.LightDark(darkBG)
+
+	return styles{
+		app: lipgloss.NewStyle().
+			Padding(1, 2),
+		title: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FFFDF5")).
+			Background(lipgloss.Color("#25A065")).
+			Padding(0, 1),
+		statusMessage: lipgloss.NewStyle().
+			Foreground(lightDark(lipgloss.Color("#04B575"), lipgloss.Color("#04B575"))),
+	}
+}
+
+type item struct {
+	title       string
+	description string
+}
+
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.description }
+func (i item) FilterValue() string { return i.title }
+
 type model struct {
-	newFileInput textinput.Model
-	inputVisible bool
-	currentFile  *os.File
-	noteTextArea textarea.Model
+	newFileInput  textinput.Model
+	inputVisible  bool
+	currentFile   *os.File
+	noteTextArea  textarea.Model
+	styles        styles
+	darkBG        bool
+	width, height int
+	list          list.Model
+	showingList   bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -46,13 +82,37 @@ func (m model) Init() tea.Cmd {
 	return nil
 }
 
+func (m *model) updateListProperties() {
+	// Update list size.
+	h, _ := m.styles.app.GetFrameSize()
+	m.list.SetSize(m.width-h, m.height-8)
+
+	// Update the model and list styles.
+	m.styles = newStyles(m.darkBG)
+	m.list.Styles.Title = m.styles.title
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		m.darkBG = msg.IsDark()
+		m.updateListProperties()
+		return m, nil
+
+	case tea.WindowSizeMsg:
+		m.width, m.height = msg.Width, msg.Height
+		m.updateListProperties()
+		return m, nil
+
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "ctrl+l":
+			//todo: showing list
+			m.showingList = true
+			return m, nil
 		case "ctrl+n":
 			m.inputVisible = true
 		case "ctrl+s":
@@ -83,9 +143,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.noteTextArea.SetValue("")
 
 			return m, nil
+
 		case "enter":
 			if m.currentFile != nil {
-				break	
+				break
 			}
 			//todo: creat folder
 			fileName := m.newFileInput.Value()
@@ -117,6 +178,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.noteTextArea, cmd = m.noteTextArea.Update(msg)
 	}
 
+	if m.showingList {
+		m.list, cmd = m.list.Update(msg)
+	}
+
 	return m, cmd
 }
 
@@ -140,6 +205,10 @@ func (m model) View() tea.View {
 
 	if m.currentFile != nil {
 		view = m.noteTextArea.View()
+	}
+
+	if m.showingList {
+		view = m.list.View()
 	}
 
 	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)
@@ -179,10 +248,20 @@ func initializeModel() model {
 	ta.SetStyles(textarea.DefaultDarkStyles())
 	ta.Focus()
 
+	//list
+	noteList := listFile()
+	finalList := list.New(noteList, list.NewDefaultDelegate(), 0, 0)
+	finalList.Title = "All notes"
+	finalList.Styles.Title = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("16")).
+		Background(lipgloss.Color("254")).
+		Padding(0, 1)
+
 	return model{
 		newFileInput: ti,
 		inputVisible: false,
 		noteTextArea: ta,
+		list:         finalList,
 	}
 }
 
@@ -194,4 +273,32 @@ func main() {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+}
+
+func listFile() []list.Item {
+	items := make([]list.Item, 0)
+
+	entries, err := os.ReadDir(vaultDir)
+	if err != nil {
+		log.Fatal("Error reading note list")
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			info, err := entry.Info()
+			if err != nil {
+				continue
+			}
+
+			modTime := info.ModTime().Format("200601-02 15:04")
+
+			items = append(items, item{
+				title:       entry.Name(),
+				description: fmt.Sprintf("modified: %s", modTime),
+			})
+
+		}
+	}
+
+	return items
 }

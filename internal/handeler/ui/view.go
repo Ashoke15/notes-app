@@ -26,16 +26,19 @@ func (m Model) View() tea.View {
 	help := "Ctrl+N: new file . Ctrl+L: list . Esc: back . Ctrl+S: save . Ctrl+Q: quit"
 
 	view := ""
-	if m.InputVisible {
+
+	switch m.State {
+	case stateNewFile:
 		view = m.NewFileInput.View()
-	}
 
-	if m.CurrentFile != nil {
+	case stateEditing:
 		view = m.NoteTextArea.View()
-	}
 
-	if m.ShowingList {
+	case stateListing:
 		view = m.List.View()
+
+	case stateIdle:
+		view = "Press Ctrl+N for new note, or Ctrl+L to view all notes."
 	}
 
 	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)

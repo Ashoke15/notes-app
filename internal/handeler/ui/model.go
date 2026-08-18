@@ -9,17 +9,25 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+type viewstate int
+
+const (
+	stateIdle viewstate = iota
+	stateNewFile
+	stateEditing
+	stateListing
+)
+
 type Model struct {
 	NewFileInput  textinput.Model
-	InputVisible  bool
 	CurrentFile   *os.File
 	NoteTextArea  textarea.Model
 	Style         Styles
 	DarkBG        bool
 	Width, Height int
 	List          list.Model
-	ShowingList   bool
 	StatusMsg     string
+	State         viewstate
 }
 
 type Styles struct {

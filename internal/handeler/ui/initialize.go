@@ -80,7 +80,7 @@ func InitializeModel() Model {
 
 	return Model{
 		NewFileInput: ti,
-		InputVisible: false,
+		State:        stateIdle,
 		Style:        NewStyles(false),
 		NoteTextArea: ta,
 		List:         finalList,

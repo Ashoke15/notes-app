@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -23,6 +24,15 @@ var (
 
 	vaultDir string
 )
+
+func init() {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal("Error getting home directory", err)
+	}
+
+	vaultDir = fmt.Sprintf("%s/.totion", homedir)
+}
 
 func InitializeModel() Model {
 
@@ -57,7 +67,10 @@ func InitializeModel() Model {
 	ta.Focus()
 
 	//list
-	noteList := listFile()
+	noteList, err := listFile()
+	if err != nil {
+		noteList = []list.Item{}
+	}
 	finalList := list.New(noteList, list.NewDefaultDelegate(), 0, 0)
 	finalList.Title = "All notes"
 	finalList.Styles.Title = lipgloss.NewStyle().

@@ -2,21 +2,10 @@ package ui
 
 import (
 	"fmt"
-	"log"
-	"os"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
-
-func init() {
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal("Error getting home directory", err)
-	}
-
-	vaultDir = fmt.Sprintf("%s/.totion", homedir)
-}
 
 func (m Model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
@@ -50,6 +39,11 @@ func (m Model) View() tea.View {
 	}
 
 	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)
+
+	if m.StatusMsg != "" {
+		renderdStatus := m.Style.statusMessage.Render(m.StatusMsg)
+		prit = fmt.Sprintf("%s\n\n%s", prit, renderdStatus)
+	}
 
 	return tea.NewView(prit)
 }

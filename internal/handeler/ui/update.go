@@ -19,9 +19,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyPressMsg:
+		m.StatusMsg = ""
+		
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return m, tea.Quit
+
+		case "q":
+			if !m.InputVisible && m.CurrentFile == nil && !m.ShowingList {
+				return m, tea.Quit
+			}
 
 		case "esc":
 			if m.InputVisible {
@@ -45,7 +52,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "ctrl+l":
 			//todo: showing list
-			noteList := listFile()
+			noteList, err := listFile()
+			if err != nil{
+				noteList = []list.Item{}
+			}
 			m.List.SetItems(noteList)
 			m.ShowingList = true
 			return m, nil

@@ -19,6 +19,7 @@ type Model struct {
 	Width, Height int
 	List          list.Model
 	ShowingList   bool
+	StatusMsg     string
 }
 
 type Styles struct {

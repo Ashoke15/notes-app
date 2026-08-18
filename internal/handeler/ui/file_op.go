@@ -50,7 +50,7 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 
 		f, err := os.Create(filepath)
 		if err != nil {
-			log.Fatalf("%v", err)
+			return m, nil
 		}
 
 		m.CurrentFile = f
@@ -60,21 +60,12 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func init() {
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal("Error getting home directory", err)
-	}
-
-	vaultDir = fmt.Sprintf("%s/.totion", homedir)
-}
-
-func listFile() []list.Item {
+func listFile() ([]list.Item, error) {
 	items := make([]list.Item, 0)
 
 	entries, err := os.ReadDir(vaultDir)
 	if err != nil {
-		log.Fatal("Error reading note list")
+		return nil, fmt.Errorf("error reading note list %w",err)
 	}
 
 	for _, entry := range entries {
@@ -94,7 +85,7 @@ func listFile() []list.Item {
 		}
 	}
 
-	return items
+	return items, nil
 }
 
 func (m *Model) save() (tea.Model, tea.Cmd) {
@@ -103,27 +94,29 @@ func (m *Model) save() (tea.Model, tea.Cmd) {
 	}
 
 	if err := m.CurrentFile.Truncate(0); err != nil {
-		fmt.Println("can not save file :(")
+		m.StatusMsg = "can not save file :("
 		return m, nil
 	}
 
 	if _, err := m.CurrentFile.Seek(0, 0); err != nil {
-		fmt.Println("can not save the file :(")
+		m.StatusMsg = "can not seek the file :("
 		return m, nil
 	}
 
 	if _, err := m.CurrentFile.WriteString(m.NoteTextArea.Value()); err != nil {
-		fmt.Println("can not save the file :(")
+		m.StatusMsg = "can not write the file :("
 		return m, nil
 	}
 
 	if err := m.CurrentFile.Close(); err != nil {
-		fmt.Println("can not close the file.")
+		m.StatusMsg = "can not close the file."
+		return m, nil
 	}
 
 	m.CurrentFile = nil
 	m.NoteTextArea.SetValue("")
 
+	m.StatusMsg = "Note Save successfully"
+
 	return m, nil
 }
-

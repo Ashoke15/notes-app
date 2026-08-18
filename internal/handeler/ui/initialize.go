@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
@@ -31,7 +31,7 @@ func init() {
 		log.Fatal("Error getting home directory", err)
 	}
 
-	vaultDir = fmt.Sprintf("%s/.totion", homedir)
+	vaultDir = filepath.Join(homedir, ".totion")
 }
 
 func InitializeModel() Model {
@@ -81,6 +81,7 @@ func InitializeModel() Model {
 	return Model{
 		NewFileInput: ti,
 		InputVisible: false,
+		Style:        NewStyles(false),
 		NoteTextArea: ta,
 		List:         finalList,
 	}

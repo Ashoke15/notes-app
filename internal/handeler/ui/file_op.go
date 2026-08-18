@@ -2,8 +2,8 @@ package ui
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"path/filepath"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
@@ -18,18 +18,19 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 	if m.ShowingList {
 		item, ok := m.List.SelectedItem().(Item)
 		if ok {
-			filepath := fmt.Sprintf("%s/%s", vaultDir, item.Title())
-			content, err := os.ReadFile(filepath)
+			notePath := filepath.Join(vaultDir, item.Title())
+			content, err := os.ReadFile(notePath)
 			if err != nil {
-				log.Printf("Error reading file: %v", err)
+				m.StatusMsg = "Error: Cannot read file"
 				return m, nil
 			}
 
 			m.NoteTextArea.SetValue(string(content))
 
-			f, err := os.OpenFile(filepath, os.O_RDWR, 0644)
+			f, err := os.OpenFile(notePath, os.O_RDWR, 0644)
 			if err != nil {
-				log.Printf("error reading file: %v", err)
+				m.StatusMsg = "Error: Cannot open file for editing"
+				return m, nil
 			}
 
 			m.CurrentFile = f
@@ -42,13 +43,12 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 
 	fileName := m.NewFileInput.Value()
 	if fileName != "" {
-		filepath := fmt.Sprintf("%s/%s.md", vaultDir, fileName)
-
-		if _, err := os.Stat(filepath); err == nil {
+		notePath := filepath.Join(vaultDir, fileName+".md")
+		if _, err := os.Stat(notePath); err == nil {
 			return m, nil
 		}
 
-		f, err := os.Create(filepath)
+		f, err := os.Create(notePath)
 		if err != nil {
 			return m, nil
 		}
@@ -65,7 +65,7 @@ func listFile() ([]list.Item, error) {
 
 	entries, err := os.ReadDir(vaultDir)
 	if err != nil {
-		return nil, fmt.Errorf("error reading note list %w",err)
+		return nil, fmt.Errorf("error reading note list %w", err)
 	}
 
 	for _, entry := range entries {

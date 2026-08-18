@@ -2,4 +2,4 @@ build:
 	@go build -0 notes-app .
 
 run:
-	@go run main.go
+	@go run cmd/totion/main.go

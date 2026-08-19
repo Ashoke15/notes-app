@@ -41,7 +41,16 @@ func (m Model) View() tea.View {
 		view = "Press Ctrl+N for new note, or Ctrl+L to view all notes."
 
 	case stateConfirmDelete:
-		view = fmt.Sprintf("Delete \"%s\"? (y/n)",m.PendingDelete)
+		warning := m.Style.danger.Bold(true).Render("⚠ Delete note?")
+		name := m.Style.danger.Render(fmt.Sprintf("\"%s\"", m.PendingDelete))
+		note := m.Style.confirmHint.Render("This cannot be undone.")
+
+		yKey := m.Style.keyHint.Render(" y ")
+		nKey := m.Style.keyHint.Render(" n ")
+		actions := fmt.Sprintf("%s confirm    %s cancel", yKey, nKey)
+
+		body := fmt.Sprintf("%s\n%s\n\n%s\n\n%s", warning, name, note, actions)
+		view = m.Style.confirmBox.Render(body)
 	}
 
 	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)

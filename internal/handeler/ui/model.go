@@ -36,6 +36,10 @@ type Styles struct {
 	app           lipgloss.Style
 	title         lipgloss.Style
 	statusMessage lipgloss.Style
+	danger        lipgloss.Style
+	confirmBox    lipgloss.Style
+	confirmHint   lipgloss.Style
+	keyHint       lipgloss.Style
 }
 
 type Item struct {

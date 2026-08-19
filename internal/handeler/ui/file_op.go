@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
@@ -17,6 +18,10 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 
 	if m.State == stateConfirmDelete {
 		return m, nil
+	}
+
+	if m.State == stateRename {
+		return m.summitRename()
 	}
 
 	if m.State == stateListing {
@@ -62,7 +67,7 @@ func (m Model) esc() (tea.Model, tea.Cmd) {
 		m.PendingDelete = ""
 		m.State = stateListing
 
-		return m, nil	
+		return m, nil
 	}
 
 	if m.State == stateEditing && m.CurrentFile != nil {
@@ -73,6 +78,10 @@ func (m Model) esc() (tea.Model, tea.Cmd) {
 
 	if m.State == stateNewFile {
 		m.NewFileInput.SetValue("")
+	}
+
+	if m.State == stateRename {
+		return m.cancelRename()
 	}
 
 	m.State = stateIdle
@@ -127,14 +136,14 @@ func (m Model) startDelet() (tea.Model, tea.Cmd) {
 	m.PendingDelete = item.Title()
 	m.State = stateConfirmDelete
 
-	return m, nil	
+	return m, nil
 }
 
 func (m Model) confirmDelet() (tea.Model, tea.Cmd) {
 	if err := vault.Delet(vaultDir, m.PendingDelete); err != nil {
 		m.StatusMsg = "Error: Cannot delet note"
 	} else {
-		m.StatusMsg = fmt.Sprintf("Deleted: %s",m.PendingDelete)
+		m.StatusMsg = fmt.Sprintf("Deleted: %s", m.PendingDelete)
 	}
 
 	items, err := listFile()
@@ -146,11 +155,71 @@ func (m Model) confirmDelet() (tea.Model, tea.Cmd) {
 	m.PendingDelete = ""
 	m.State = stateListing
 
-	return m, nil	
+	return m, nil
 }
 
 func (m Model) cancelDelet() (tea.Model, tea.Cmd) {
 	m.PendingDelete = ""
+	m.State = stateListing
+
+	return m, nil
+}
+
+func (m Model) startRename() (tea.Model, tea.Cmd) {
+	if m.State != stateListing || m.List.FilterState() == list.Filtering {
+		return m, nil
+	}
+
+	item, ok := m.List.SelectedItem().(Item)
+	if !ok {
+		return m, nil
+	}
+
+	m.PendingRename = item.Title()
+	m.RenameInput.SetValue(strings.TrimSuffix(item.Title(), ".md"))
+	m.RenameInput.Focus()
+	m.State = stateRename
+
+	return m, nil
+}
+
+func (m Model) summitRename() (tea.Model, tea.Cmd) {
+	newName := strings.TrimSpace(m.RenameInput.Value())
+
+	if newName == "" || newName == strings.TrimSuffix(m.PendingRename, ".md") {
+		return m.cancelRename()
+	}
+
+	nameWithExt := newName + ".md"
+
+	err := vault.Rename(vaultDir, m.PendingRename, nameWithExt)
+	switch {
+	case errors.Is(err, vault.ErrAlredyExists):
+		m.StatusMsg = "A note with that name alredy exists"
+		return m, nil
+	case err != nil:
+		m.StatusMsg = "Error: cannot rename note"
+		return m, nil
+	}
+
+	m.StatusMsg = fmt.Sprintf("Rename to %s", nameWithExt)
+
+	item, err := listFile()
+	if err != nil {
+		item = []list.Item{}
+	}
+	m.List.SetItems(item)
+
+	m.PendingRename = ""
+	m.RenameInput.SetValue("")
+	m.State = stateListing
+
+	return m, nil
+}
+
+func (m Model) cancelRename() (tea.Model, tea.Cmd) {
+	m.PendingRename = ""
+	m.RenameInput.SetValue("")
 	m.State = stateListing
 
 	return m, nil

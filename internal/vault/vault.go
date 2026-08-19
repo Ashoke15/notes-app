@@ -119,3 +119,18 @@ func Delet(dir, name string) error {
 
 	return nil
 }
+
+func Rename(dir, oldname, newname string) error {
+	oldPath := filepath.Join(dir, oldname)
+	newPath := filepath.Join(dir,newname)
+
+	if _, err := os.Stat(newPath); err == nil {
+		return ErrAlredyExists
+	}
+
+	if err := os.Rename(oldPath, newPath); err != nil {
+		return fmt.Errorf("renme note : %w", err)
+	}
+
+	return nil
+}

@@ -29,5 +29,9 @@ func NewStyles(darkBG bool) Styles {
 			Foreground(lipgloss.Color("#FFFDF5")).
 			Background(lipgloss.Color("#FF5555")).
 			Padding(0, 1),
+		renameBox: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("99")).
+			Padding(1, 2),
 	}
 }

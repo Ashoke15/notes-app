@@ -16,11 +16,13 @@ const (
 	stateNewFile
 	stateEditing
 	stateListing
+	stateRename
 	stateConfirmDelete
 )
 
 type Model struct {
 	NewFileInput  textinput.Model
+	RenameInput   textinput.Model
 	CurrentFile   *os.File
 	NoteTextArea  textarea.Model
 	Style         Styles
@@ -30,6 +32,7 @@ type Model struct {
 	StatusMsg     string
 	State         viewstate
 	PendingDelete string
+	PendingRename string
 }
 
 type Styles struct {
@@ -40,6 +43,7 @@ type Styles struct {
 	confirmBox    lipgloss.Style
 	confirmHint   lipgloss.Style
 	keyHint       lipgloss.Style
+	renameBox     lipgloss.Style
 }
 
 type Item struct {

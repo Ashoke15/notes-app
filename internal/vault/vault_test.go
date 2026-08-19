@@ -117,3 +117,45 @@ func TestDelet(t *testing.T) {
 		t.Fatalf("List = %+v expected empty after delet",notes)
 	}
 }
+
+func TestRename(t *testing.T) {
+	dir := t.TempDir()
+
+	f, err := Creat(dir, "todo")
+	if err != nil {
+		t.Fatalf("Creat() err = %v", err)
+	}
+	f.Close()
+
+	if err := Rename(dir, "todo.md", "check.md"); err != nil {
+		t.Fatalf("Rename() error = %v", err)
+	}
+
+	note, err := List(dir)
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+
+	if len(note) != 1 || note[0].Name != "check.md" {
+		t.Fatalf("LIst() %+v we wnat check.md", note)
+	}
+}
+
+func TestAlredyExits(t *testing.T) {
+	dir := t.TempDir()
+
+	f, err := Creat(dir, "todo")
+	if err != nil {
+		t.Fatalf("Creat() error = %v", err)
+	}
+	f.Close()
+
+	f, err = Creat(dir, "check")
+	if err != nil {
+		t.Fatalf("Creat() error = %v", err)
+	}
+
+	if err = Rename(dir, "todo.md", "check.md"); err != ErrAlredyExists{
+		t.Fatalf("Rename() error = %v, want alredy Exits error", err)
+	}
+}

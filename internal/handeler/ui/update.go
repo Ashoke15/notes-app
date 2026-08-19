@@ -38,6 +38,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m.startDelet()
 			}
 
+		case "r":
+			if m.State == stateListing && m.List.FilterState() != list.Filtering {
+				return m.startRename()
+			}
+
 		case "y":
 			if m.State == stateConfirmDelete {
 				return m.confirmDelet()
@@ -83,6 +88,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.State == stateListing {
 		m.List, cmd = m.List.Update(msg)
+	}
+
+	if m.State == stateRename {
+		m.RenameInput, cmd = m.RenameInput.Update(msg)
 	}
 
 	return m, cmd

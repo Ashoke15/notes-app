@@ -23,7 +23,7 @@ func (m Model) View() tea.View {
 
 	welcome := style.Render("Welcome to Totion 🧠")
 
-	help := "Ctrl+N: new file . Ctrl+L: list . d: delete . Esc/q: back . Ctrl+S: save "
+	help := "Ctrl+N: new file . r: rename . Ctrl+L: list . d: delete . Esc: back . Ctrl+S: save . q: quit"
 
 	view := ""
 
@@ -51,6 +51,10 @@ func (m Model) View() tea.View {
 
 		body := fmt.Sprintf("%s\n%s\n\n%s\n\n%s", warning, name, note, actions)
 		view = m.Style.confirmBox.Render(body)
+
+	case stateRename:
+		lebel := m.Style.confirmHint.Render(fmt.Sprintf("Renaming \"%s\"",m.PendingRename))
+		view = m.Style.renameBox.Render(lebel + "\n\n" + m.RenameInput.View())
 	}
 
 	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)

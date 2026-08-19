@@ -47,6 +47,11 @@ func InitializeModel() Model {
 	ti.CharLimit = 156
 	ti.SetWidth(50)
 
+	ri := textinput.New()
+	ri.SetVirtualCursor(false)
+	ri.CharLimit = 156
+	ri.SetWidth(50)
+
 	s := ti.Styles()
 	s.Focused.Text = textStyle
 	s.Blurred.Text = textStyle
@@ -55,6 +60,7 @@ func InitializeModel() Model {
 	s.Focused.Prompt = focusedPromptStyle
 	s.Blurred.Placeholder = placeholderStyle
 	ti.SetStyles(s)
+	ri.SetStyles(s)
 
 	//textarea
 	ta := textarea.New()
@@ -78,6 +84,7 @@ func InitializeModel() Model {
 
 	return Model{
 		NewFileInput: ti,
+		RenameInput:  ri,
 		State:        stateIdle,
 		Style:        NewStyles(false),
 		NoteTextArea: ta,

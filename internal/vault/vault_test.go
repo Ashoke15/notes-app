@@ -94,3 +94,26 @@ func TestListEmpty(t *testing.T) {
 		t.Fatalf("Showing notes: %+v want empty",notes)
 	}
 }
+
+func TestDelet(t *testing.T) {
+	dir := t.TempDir()
+
+	f, err := Creat(dir,"todo")
+	if err != nil {
+		t.Fatalf("Creat() err : %v", err)
+	}	
+	f.Close()
+
+	if err := Delet(dir,"todo.md"); err != nil {
+		t.Fatalf("Delet() err %v", err)
+	}
+
+	notes, err := List(dir)
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+
+	if len(notes) != 0 {
+		t.Fatalf("List = %+v expected empty after delet",notes)
+	}
+}

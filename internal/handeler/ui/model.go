@@ -16,6 +16,7 @@ const (
 	stateNewFile
 	stateEditing
 	stateListing
+	stateConfirmDelete
 )
 
 type Model struct {
@@ -28,6 +29,7 @@ type Model struct {
 	List          list.Model
 	StatusMsg     string
 	State         viewstate
+	PendingDelete string
 }
 
 type Styles struct {

@@ -15,6 +15,10 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	if m.State == stateConfirmDelete {
+		return m, nil
+	}
+
 	if m.State == stateListing {
 		item, ok := m.List.SelectedItem().(Item)
 		if ok {
@@ -53,6 +57,13 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 }
 
 func (m Model) esc() (tea.Model, tea.Cmd) {
+
+	if m.State == stateConfirmDelete {
+		m.PendingDelete = ""
+		m.State = stateListing
+
+		return m, nil	
+	}
 
 	if m.State == stateEditing && m.CurrentFile != nil {
 		m.CurrentFile.Close()
@@ -99,6 +110,48 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 	m.NoteTextArea.SetValue("")
 	m.StatusMsg = "Not save successful"
 	m.State = stateIdle
+
+	return m, nil
+}
+
+func (m Model) startDelet() (tea.Model, tea.Cmd) {
+	if m.State != stateListing || m.List.FilterState() == list.Filtering {
+		return m, nil
+	}
+
+	item, ok := m.List.SelectedItem().(Item)
+	if !ok {
+		return m, nil
+	}
+
+	m.PendingDelete = item.Title()
+	m.State = stateConfirmDelete
+
+	return m, nil	
+}
+
+func (m Model) confirmDelet() (tea.Model, tea.Cmd) {
+	if err := vault.Delet(vaultDir, m.PendingDelete); err != nil {
+		m.StatusMsg = "Error: Cannot delet note"
+	} else {
+		m.StatusMsg = fmt.Sprintf("Deleted: %s",m.PendingDelete)
+	}
+
+	items, err := listFile()
+	if err != nil {
+		items = []list.Item{}
+	}
+	m.List.SetItems(items)
+
+	m.PendingDelete = ""
+	m.State = stateListing
+
+	return m, nil	
+}
+
+func (m Model) cancelDelet() (tea.Model, tea.Cmd) {
+	m.PendingDelete = ""
+	m.State = stateListing
 
 	return m, nil
 }

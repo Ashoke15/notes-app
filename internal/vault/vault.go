@@ -109,3 +109,13 @@ func Save(f *os.File, content string) error {
 
 	return nil
 }
+
+func Delet(dir, name string) error {
+	path := filepath.Join(dir, name)
+
+	if err := os.Remove(path); err != nil {
+		return fmt.Errorf("delete note: %w", err)
+	}
+
+	return nil
+}

@@ -33,11 +33,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
+		case "d":
+			if m.State == stateListing && m.List.FilterState() != list.Filtering {
+				return m.startDelet()
+			}
+
+		case "y":
+			if m.State == stateConfirmDelete {
+				return m.confirmDelet()
+			}
+
+		case "n":
+			if m.State == stateConfirmDelete {
+				return m.cancelDelet()
+			}
+
 		case "esc":
 			if m.State == stateListing && m.List.FilterState() == list.Filtering {
 				break
 			}
-			
+
 			return m.esc()
 
 		case "ctrl+l":

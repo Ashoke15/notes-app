@@ -23,7 +23,7 @@ func (m Model) View() tea.View {
 
 	welcome := style.Render("Welcome to Totion 🧠")
 
-	help := "Ctrl+N: new file . Ctrl+L: list . Esc: back . Ctrl+S: save . Ctrl+Q: quit"
+	help := "Ctrl+N: new file . Ctrl+L: list . d: delete . Esc/q: back . Ctrl+S: save "
 
 	view := ""
 
@@ -39,6 +39,9 @@ func (m Model) View() tea.View {
 
 	case stateIdle:
 		view = "Press Ctrl+N for new note, or Ctrl+L to view all notes."
+
+	case stateConfirmDelete:
+		view = fmt.Sprintf("Delete \"%s\"? (y/n)",m.PendingDelete)
 	}
 
 	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)

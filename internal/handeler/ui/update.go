@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 )
 
@@ -33,6 +34,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "esc":
+			if m.State == stateListing && m.List.FilterState() == list.Filtering {
+				break
+			}
+			
 			return m.esc()
 
 		case "ctrl+l":

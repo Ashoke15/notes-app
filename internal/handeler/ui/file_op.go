@@ -1,12 +1,12 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
+	"github.com/Ashoke15/notes-app/internal/vault"
 )
 
 func (m Model) enter() (tea.Model, tea.Cmd) {
@@ -18,24 +18,15 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 	if m.State == stateListing {
 		item, ok := m.List.SelectedItem().(Item)
 		if ok {
-			notePath := filepath.Join(vaultDir, item.Title())
-			content, err := os.ReadFile(notePath)
+			f, content, err := vault.Open(vaultDir, item.title)
 			if err != nil {
-				m.StatusMsg = "Error: Cannot read file"
+				m.StatusMsg = "Error: Cannot open file"
 				return m, nil
 			}
 
 			m.NoteTextArea.SetValue(string(content))
-
-			f, err := os.OpenFile(notePath, os.O_RDWR, 0644)
-			if err != nil {
-				m.StatusMsg = "Error: Cannot open file for editing"
-				return m, nil
-			}
-
 			m.CurrentFile = f
 			m.State = stateEditing
-
 		}
 
 		return m, nil
@@ -43,31 +34,27 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 
 	fileName := m.NewFileInput.Value()
 	if fileName != "" {
-		notePath := filepath.Join(vaultDir, fileName+".md")
-		if _, err := os.Stat(notePath); err == nil {
-			m.StatusMsg = "A note with that name already exists"
-			return m, nil
-		}
-
-		f, err := os.Create(notePath)
+		f, err := vault.Creat(vaultDir, fileName)
 		if err != nil {
-			m.StatusMsg = "Error: Cannot creat file"
+			if errors.Is(err, vault.ErrAlredyExists) {
+				m.StatusMsg = "A note with that name alredy exits"
+			} else {
+				m.StatusMsg = " cannot crea file"
+			}
 			return m, nil
 		}
 
 		m.CurrentFile = f
 		m.State = stateEditing
-		m.NewFileInput.SetValue("")
+		m.NoteTextArea.SetValue("")
 	}
+
 	return m, nil
 }
 
-func(m Model) esc() (tea.Model, tea.Cmd){
-	if m.State == stateListing && m.List.FilterState() == list.Filtering {
-		return m, nil
-	}
+func (m Model) esc() (tea.Model, tea.Cmd) {
 
-	if m.State == stateEditing && m.CurrentFile != nil{
+	if m.State == stateEditing && m.CurrentFile != nil {
 		m.CurrentFile.Close()
 		m.CurrentFile = nil
 		m.NoteTextArea.SetValue("")
@@ -83,7 +70,7 @@ func(m Model) esc() (tea.Model, tea.Cmd){
 	return m, nil
 }
 
-func (m Model) list() (tea.Model, tea.Cmd){
+func (m Model) list() (tea.Model, tea.Cmd) {
 	if m.State != stateIdle {
 		return m, nil
 	}
@@ -103,58 +90,31 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if err := m.CurrentFile.Truncate(0); err != nil {
-		m.StatusMsg = "can not save file :("
-		return m, nil
-	}
-
-	if _, err := m.CurrentFile.Seek(0, 0); err != nil {
-		m.StatusMsg = "can not seek the file :("
-		return m, nil
-	}
-
-	if _, err := m.CurrentFile.WriteString(m.NoteTextArea.Value()); err != nil {
-		m.StatusMsg = "can not write the file :("
-		return m, nil
-	}
-
-	if err := m.CurrentFile.Close(); err != nil {
-		m.StatusMsg = "can not close the file."
+	if err := vault.Save(m.CurrentFile, m.NoteTextArea.Value()); err != nil {
+		m.StatusMsg = "Error: cannot save massege"
 		return m, nil
 	}
 
 	m.CurrentFile = nil
 	m.NoteTextArea.SetValue("")
-	m.StatusMsg = "Note Save successfully"
+	m.StatusMsg = "Not save successful"
 	m.State = stateIdle
 
 	return m, nil
 }
 
-
 func listFile() ([]list.Item, error) {
-	items := make([]list.Item, 0)
-
-	entries, err := os.ReadDir(vaultDir)
+	notes, err := vault.List(vaultDir)
 	if err != nil {
-		return nil, fmt.Errorf("error reading note list %w", err)
+		return nil, err
 	}
 
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			info, err := entry.Info()
-			if err != nil {
-				continue
-			}
-
-			modTime := info.ModTime().Format("2006-01-02 15:04")
-
-			items = append(items, Item{
-				title:       entry.Name(),
-				description: fmt.Sprintf("modified: %s", modTime),
-			})
-
-		}
+	items := make([]list.Item, 0, len(notes))
+	for _, n := range notes {
+		items = append(items, Item{
+			title:       n.Name,
+			description: fmt.Sprintf("Modified: %s", n.ModTime.Format("2006-01-02 15:04")),
+		})
 	}
 
 	return items, nil

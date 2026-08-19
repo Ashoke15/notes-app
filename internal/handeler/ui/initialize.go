@@ -2,13 +2,12 @@ package ui
 
 import (
 	"log"
-	"os"
-	"path/filepath"
 
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/lipgloss/v2"
+	"github.com/Ashoke15/notes-app/internal/vault"
 )
 
 var (
@@ -26,18 +25,17 @@ var (
 )
 
 func init() {
-	homedir, err := os.UserHomeDir()
+	dir, err := vault.DefaultDir()
 	if err != nil {
-		log.Fatal("Error getting home directory", err)
+		log.Fatal(err)
 	}
 
-	vaultDir = filepath.Join(homedir, ".totion")
+	vaultDir = dir
 }
 
 func InitializeModel() Model {
 
-	err := os.MkdirAll(vaultDir, 0750)
-	if err != nil {
+	if err := vault.EnsureDir(vaultDir); err != nil {
 		log.Fatal(err)
 	}
 

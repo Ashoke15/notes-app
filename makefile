@@ -3,3 +3,6 @@ build:
 
 run:
 	@go run cmd/totion/main.go
+
+test:
+	@go test -v ./...

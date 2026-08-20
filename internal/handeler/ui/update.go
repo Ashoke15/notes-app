@@ -9,7 +9,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
-		m.DarkBG = msg.IsDark()
+		if m.Theme == "auto" {
+			m.DarkBG = msg.IsDark()
+		}
 		m.UpdateListProperties()
 		return m, nil
 

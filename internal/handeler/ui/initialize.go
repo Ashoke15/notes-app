@@ -7,6 +7,7 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/lipgloss/v2"
+	"github.com/Ashoke15/notes-app/internal/config"
 	"github.com/Ashoke15/notes-app/internal/vault"
 )
 
@@ -34,6 +35,23 @@ func init() {
 }
 
 func InitializeModel() Model {
+
+	cfgPath, err := config.Puth()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cfg, err := config.Load(cfgPath)
+	if err != nil {
+		cfg = config.Default()
+	}
+
+	if cfg.VaultDir != "" {
+		expanded, err := config.ExpandHome(cfg.VaultDir)
+		if err == nil {
+			vaultDir = expanded
+		}
+	}
 
 	if err := vault.EnsureDir(vaultDir); err != nil {
 		log.Fatal(err)

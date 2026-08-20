@@ -154,6 +154,7 @@ func TestAlredyExits(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Creat() error = %v", err)
 	}
+	f.Close()
 
 	if err = Rename(dir, "todo.md", "check.md"); err != ErrAlredyExists{
 		t.Fatalf("Rename() error = %v, want alredy Exits error", err)

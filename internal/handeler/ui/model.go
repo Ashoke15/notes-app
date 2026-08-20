@@ -25,6 +25,7 @@ type Model struct {
 	RenameInput   textinput.Model
 	CurrentFile   *os.File
 	NoteTextArea  textarea.Model
+	Theme         string
 	Style         Styles
 	DarkBG        bool
 	Width, Height int

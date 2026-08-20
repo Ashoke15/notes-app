@@ -75,6 +75,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+s":
 			return m.save()
 
+		case "ctrl+p":
+			return m.togglePreview()
+
 		case "enter":
 			return m.enter()
 		}
@@ -85,7 +88,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if m.CurrentFile != nil {
-		m.NoteTextArea, cmd = m.NoteTextArea.Update(msg)
+		if m.PreviewOn {
+			m.Preview, cmd = m.Preview.Update(msg)
+		} else {
+			m.NoteTextArea, cmd = m.NoteTextArea.Update(msg)
+		}
 	}
 
 	if m.State == stateListing {

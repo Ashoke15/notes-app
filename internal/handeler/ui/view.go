@@ -23,7 +23,7 @@ func (m Model) View() tea.View {
 
 	welcome := style.Render("Welcome to Totion 🧠")
 
-	help := "Ctrl+N: new file . r: rename . Ctrl+L: list . d: delete . Esc: back . Ctrl+S: save . q: quit"
+	help := "Ctrl+N: new file . r: rename . Ctrl+L: list . Ctrl+p: preview . d: delete . Esc: back . Ctrl+S: save . q: quit"
 
 	view := ""
 
@@ -32,7 +32,12 @@ func (m Model) View() tea.View {
 		view = m.NewFileInput.View()
 
 	case stateEditing:
-		view = m.NoteTextArea.View()
+		if m.PreviewOn {
+			scrollProgress := fmt.Sprintf("▼ Scroll: %3.f%%", m.Preview.ScrollPercent()*100)
+			view = m.Preview.View() + "\n" + m.Style.confirmHint.Render(scrollProgress)
+		} else {
+			view = m.NoteTextArea.View()
+		}
 
 	case stateListing:
 		view = m.List.View()

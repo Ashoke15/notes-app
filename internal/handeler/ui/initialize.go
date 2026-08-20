@@ -6,6 +6,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
 	"charm.land/lipgloss/v2"
 	"github.com/Ashoke15/notes-app/internal/config"
 	"github.com/Ashoke15/notes-app/internal/vault"
@@ -88,6 +89,9 @@ func InitializeModel() Model {
 	ta.SetStyles(textarea.DefaultDarkStyles())
 	ta.Focus()
 
+	//markdown preview
+	pv := viewport.New()
+
 	//list
 	noteList, err := listFile()
 	if err != nil {
@@ -103,6 +107,7 @@ func InitializeModel() Model {
 	return Model{
 		NewFileInput: ti,
 		RenameInput:  ri,
+		Preview:      pv,
 		State:        stateIdle,
 		Style:        NewStyles(false),
 		NoteTextArea: ta,

@@ -8,6 +8,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"github.com/Ashoke15/notes-app/internal/vault"
+	"github.com/charmbracelet/glamour"
 )
 
 func (m Model) enter() (tea.Model, tea.Cmd) {
@@ -76,6 +77,11 @@ func (m Model) esc() (tea.Model, tea.Cmd) {
 		m.NoteTextArea.SetValue("")
 	}
 
+	if m.State == stateEditing && m.PreviewOn {
+		m.PreviewOn = false
+		return m, nil
+	}
+
 	if m.State == stateNewFile {
 		m.NewFileInput.SetValue("")
 	}
@@ -117,6 +123,7 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 
 	m.CurrentFile = nil
 	m.NoteTextArea.SetValue("")
+	m.PreviewOn = false
 	m.StatusMsg = "Not save successful"
 	m.State = stateIdle
 
@@ -225,6 +232,29 @@ func (m Model) cancelRename() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) togglePreview() (tea.Model, tea.Cmd) {
+	if m.State != stateEditing {
+		return m, nil
+	}
+
+	if m.PreviewOn {
+		m.PreviewOn = false
+		return m, nil
+	}
+
+	rendered, err := renderMarkDown(m.NoteTextArea.Value(), m.Preview.Width())
+	if err != nil {
+		m.StatusMsg = "Error: Cannot render preview"
+		return m, nil
+	}
+
+	m.Preview.SetContent(rendered)
+	m.Preview.GotoTop()
+	m.PreviewOn = true
+
+	return m, nil
+}
+
 func listFile() ([]list.Item, error) {
 	notes, err := vault.List(vaultDir)
 	if err != nil {
@@ -240,4 +270,26 @@ func listFile() ([]list.Item, error) {
 	}
 
 	return items, nil
+}
+
+func renderMarkDown(content string, width int) (string, error) {
+	if width < 20 {
+		width = 20
+	}
+
+	renderer, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(width),
+	)
+
+	if err != nil {
+		return "", fmt.Errorf("Custom build render err = %w", err)
+	}
+
+	rendered, err := renderer.Render(content)
+	if err != nil {
+		return "", fmt.Errorf("Custom render markdown err = %w", err)
+	}
+
+	return rendered, nil
 }

@@ -6,6 +6,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
 	"charm.land/lipgloss/v2"
 )
 
@@ -25,6 +26,8 @@ type Model struct {
 	RenameInput   textinput.Model
 	CurrentFile   *os.File
 	NoteTextArea  textarea.Model
+	Preview       viewport.Model
+	PreviewOn     bool
 	Theme         string
 	Style         Styles
 	DarkBG        bool
@@ -60,6 +63,10 @@ func (m *Model) UpdateListProperties() {
 	// Update list size.
 	h, _ := m.Style.app.GetFrameSize()
 	m.List.SetSize(m.Width-h, m.Height-4)
+
+	//update the preview size
+	m.Preview.SetWidth(m.Width - h)
+	m.Preview.SetHeight(m.Height - 4)
 
 	// Update the model and list styles.
 	m.Style = NewStyles(m.DarkBG)

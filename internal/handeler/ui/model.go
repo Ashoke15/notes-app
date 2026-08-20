@@ -3,6 +3,7 @@ package ui
 import (
 	"os"
 
+	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
@@ -28,6 +29,7 @@ type Model struct {
 	NoteTextArea  textarea.Model
 	Preview       viewport.Model
 	PreviewOn     bool
+	Help          help.Model
 	Theme         string
 	Style         Styles
 	DarkBG        bool
@@ -67,6 +69,8 @@ func (m *Model) UpdateListProperties() {
 	//update the preview size
 	m.Preview.SetWidth(m.Width - h)
 	m.Preview.SetHeight(m.Height - 4)
+
+	m.Help.SetWidth(m.Width-h)
 
 	// Update the model and list styles.
 	m.Style = NewStyles(m.DarkBG)

@@ -3,6 +3,7 @@ package ui
 import (
 	"log"
 
+	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
@@ -91,6 +92,7 @@ func InitializeModel() Model {
 
 	//markdown preview
 	pv := viewport.New()
+	hm := help.New()
 
 	//list
 	noteList, err := listFile()
@@ -108,6 +110,7 @@ func InitializeModel() Model {
 		NewFileInput: ti,
 		RenameInput:  ri,
 		Preview:      pv,
+		Help:         hm,
 		State:        stateIdle,
 		Style:        NewStyles(false),
 		NoteTextArea: ta,

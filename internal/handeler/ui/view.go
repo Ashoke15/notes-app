@@ -23,8 +23,7 @@ func (m Model) View() tea.View {
 
 	welcome := style.Render("Welcome to Totion 🧠")
 
-	help := "Ctrl+N: new file . r: rename . Ctrl+L: list . Ctrl+p: preview . d: delete . Esc: back . Ctrl+S: save . q: quit"
-
+	help := m.Help.View(keys)
 	view := ""
 
 	switch m.State {
@@ -33,7 +32,7 @@ func (m Model) View() tea.View {
 
 	case stateEditing:
 		if m.PreviewOn {
-			scrollProgress := fmt.Sprintf("▼ Scroll: %3.f%%", m.Preview.ScrollPercent()*100)
+			scrollProgress := fmt.Sprintf("▼ Scroll: %3.0f%%", m.Preview.ScrollPercent()*100)
 			view = m.Preview.View() + "\n" + m.Style.confirmHint.Render(scrollProgress)
 		} else {
 			view = m.NoteTextArea.View()

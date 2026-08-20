@@ -59,7 +59,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.State == stateListing && m.List.FilterState() == list.Filtering {
 				break
 			}
-
 			return m.esc()
 
 		case "ctrl+l":
@@ -80,6 +79,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			return m.enter()
+
+		case "?":
+			switch m.State {
+			case stateNewFile, stateRename:
+				
+			case stateEditing:
+				if !m.PreviewOn{
+					break
+				}
+				fallthrough
+
+			default:
+				m.Help.ShowAll = !m.Help.ShowAll
+				return m, nil	
+			}
 		}
 	}
 

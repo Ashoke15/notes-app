@@ -90,9 +90,9 @@ func Open(dir, name string) (*os.File, []byte, error) {
 	return f, content, nil
 }
 
-func Save(f *os.File, content string) error {
+func Write(f *os.File, content string) error {
 	if err := f.Truncate(0); err != nil {
-		return fmt.Errorf("Truncated Note: %w", err)
+		return fmt.Errorf("truncated Notes: %w", err)
 	}
 
 	if _, err := f.Seek(0, 0); err != nil {
@@ -100,7 +100,15 @@ func Save(f *os.File, content string) error {
 	}
 
 	if _, err := f.WriteString(content); err != nil {
-		return fmt.Errorf("write note: %w", err)
+		return fmt.Errorf("Write note: %w", err)
+	}
+
+	return nil
+}
+
+func Save(f *os.File, content string) error {
+	if err := Write(f, content); err != nil {
+		return err
 	}
 
 	if err := f.Close(); err != nil {
@@ -122,7 +130,7 @@ func Delet(dir, name string) error {
 
 func Rename(dir, oldname, newname string) error {
 	oldPath := filepath.Join(dir, oldname)
-	newPath := filepath.Join(dir,newname)
+	newPath := filepath.Join(dir, newname)
 
 	if _, err := os.Stat(newPath); err == nil {
 		return ErrAlredyExists

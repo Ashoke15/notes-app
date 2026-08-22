@@ -37,6 +37,8 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 			m.NoteTextArea.SetValue(string(content))
 			m.CurrentFile = f
 			m.State = stateEditing
+			m.Dirty = false
+			m.autosavegen = 0
 		}
 
 		return m, nil
@@ -56,6 +58,8 @@ func (m Model) enter() (tea.Model, tea.Cmd) {
 
 		m.CurrentFile = f
 		m.State = stateEditing
+		m.Dirty = false
+		m.autosavegen = 0
 		m.NoteTextArea.SetValue("")
 	}
 
@@ -72,7 +76,11 @@ func (m Model) esc() (tea.Model, tea.Cmd) {
 	}
 
 	if m.State == stateEditing && m.CurrentFile != nil {
-		m.CurrentFile.Close()
+		if m.Dirty {
+			_ = vault.Save(m.CurrentFile, m.NoteTextArea.Value())
+		} else {
+			m.CurrentFile.Close()
+		}
 		m.CurrentFile = nil
 		m.NoteTextArea.SetValue("")
 	}
@@ -124,6 +132,7 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 	m.CurrentFile = nil
 	m.NoteTextArea.SetValue("")
 	m.PreviewOn = false
+	m.Dirty = false
 	m.StatusMsg = "Not save successful"
 	m.State = stateIdle
 

@@ -160,3 +160,31 @@ func TestAlredyExits(t *testing.T) {
 		t.Fatalf("Rename() error = %v, want alredy Exits error", err)
 	}
 }
+
+func TestWriteLeavesFileOpen(t *testing.T) {
+	dir := t.TempDir()
+
+	f, err := Creat(dir, "todo")
+	if err != nil {
+		t.Fatalf("Creat() err : %v", err)
+	}
+
+	if err := Write(f, "draft content"); err != nil {
+		t.Fatalf("Write() err %v", err)
+	}
+
+	if _, err := f.WriteString(""); err != nil {
+		t.Fatalf("File apear close after write() %v", err)
+	}
+	f.Close()
+
+	f2, content, err := Open(dir, "todo.md")
+	if err != nil {
+		t.Fatalf("open() err %v", err)
+	}
+	f2.Close()
+	
+	if string(content) != "draft content" {
+		t.Fatalf("content %q, want %q", content, "draft content")
+	}
+}

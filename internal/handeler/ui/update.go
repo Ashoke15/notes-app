@@ -20,6 +20,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.UpdateListProperties()
 		return m, nil
 
+	case autoSaveMsg:
+		return m.handleAutosave(msg)
+
 	case tea.KeyPressMsg:
 		m.StatusMsg = ""
 
@@ -105,7 +108,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.PreviewOn {
 			m.Preview, cmd = m.Preview.Update(msg)
 		} else {
+			before := m.NoteTextArea.Value()
 			m.NoteTextArea, cmd = m.NoteTextArea.Update(msg)
+
+			if m.NoteTextArea.Value() != before {
+				m.Dirty = true
+				m.autosavegen++
+				cmd = tea.Batch(cmd, scheduleAutosave(m.autosavegen))
+			}
 		}
 	}
 

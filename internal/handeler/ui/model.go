@@ -39,6 +39,8 @@ type Model struct {
 	State         viewstate
 	PendingDelete string
 	PendingRename string
+	Dirty         bool
+	autosavegen   int
 }
 
 type Styles struct {
@@ -70,7 +72,7 @@ func (m *Model) UpdateListProperties() {
 	m.Preview.SetWidth(m.Width - h)
 	m.Preview.SetHeight(m.Height - 4)
 
-	m.Help.SetWidth(m.Width-h)
+	m.Help.SetWidth(m.Width - h)
 
 	// Update the model and list styles.
 	m.Style = NewStyles(m.DarkBG)

@@ -1,3 +1,6 @@
+install:
+	@go mod download
+	
 build:
 	@go build -0 notes-app .
 

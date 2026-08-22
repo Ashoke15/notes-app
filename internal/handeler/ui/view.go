@@ -32,10 +32,13 @@ func (m Model) View() tea.View {
 
 	case stateEditing:
 		if m.PreviewOn {
+			renderPreview := m.Style.noteBox.Render(m.Preview.View())
+
 			scrollProgress := fmt.Sprintf("▼ Scroll: %3.0f%%", m.Preview.ScrollPercent()*100)
-			view = m.Preview.View() + "\n" + m.Style.confirmHint.Render(scrollProgress)
+
+			view = renderPreview + "\n" + m.Style.confirmHint.Render(scrollProgress)
 		} else {
-			view = m.NoteTextArea.View()
+			view = m.Style.noteBox.Render(m.NoteTextArea.Value())
 		}
 
 	case stateListing:
@@ -68,5 +71,8 @@ func (m Model) View() tea.View {
 		prit = fmt.Sprintf("%s\n\n%s", prit, renderdStatus)
 	}
 
-	return tea.NewView(prit)
+	v := tea.NewView(prit)
+	v.AltScreen = true
+
+	return v
 }

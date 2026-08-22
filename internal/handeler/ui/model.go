@@ -52,6 +52,7 @@ type Styles struct {
 	confirmHint   lipgloss.Style
 	keyHint       lipgloss.Style
 	renameBox     lipgloss.Style
+	noteBox       lipgloss.Style
 }
 
 type Item struct {
@@ -73,6 +74,9 @@ func (m *Model) UpdateListProperties() {
 	m.Preview.SetHeight(m.Height - 4)
 
 	m.Help.SetWidth(m.Width - h)
+
+	m.NoteTextArea.SetWidth(m.Width - h - 4)
+	m.NoteTextArea.SetHeight(m.Height - 8)
 
 	// Update the model and list styles.
 	m.Style = NewStyles(m.DarkBG)

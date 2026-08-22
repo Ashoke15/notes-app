@@ -33,5 +33,9 @@ func NewStyles(darkBG bool) Styles {
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("99")).
 			Padding(1, 2),
+		noteBox: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("99")).
+			Padding(0, 1),
 	}
 }

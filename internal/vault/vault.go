@@ -137,7 +137,7 @@ func Rename(dir, oldname, newname string) error {
 	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
-		return fmt.Errorf("renme note : %w", err)
+		return fmt.Errorf("rename note : %w", err)
 	}
 
 	return nil

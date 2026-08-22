@@ -24,6 +24,7 @@ func (m Model) View() tea.View {
 	welcome := style.Render("Welcome to Totion 🧠")
 
 	help := m.Help.View(keys)
+	status := ""
 	view := ""
 
 	switch m.State {
@@ -38,7 +39,7 @@ func (m Model) View() tea.View {
 
 			view = renderPreview + "\n" + m.Style.confirmHint.Render(scrollProgress)
 		} else {
-			view = m.Style.noteBox.Render(m.NoteTextArea.Value())
+			view = m.Style.noteBox.Render(m.NoteTextArea.View())
 		}
 
 	case stateListing:
@@ -64,11 +65,19 @@ func (m Model) View() tea.View {
 		view = m.Style.renameBox.Render(lebel + "\n\n" + m.RenameInput.View())
 	}
 
-	prit := fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)
+	prit := lipgloss.JoinVertical(lipgloss.Left,
+	        welcome,
+			"",
+			view,
+			"",
+			help,
+			status,
+	)	
 
 	if m.StatusMsg != "" {
 		renderdStatus := m.Style.statusMessage.Render(m.StatusMsg)
 		prit = fmt.Sprintf("%s\n\n%s", prit, renderdStatus)
+		status = m.Style.statusMessage.Render(m.StatusMsg)
 	}
 
 	v := tea.NewView(prit)

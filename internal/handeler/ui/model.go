@@ -70,13 +70,13 @@ func (m *Model) UpdateListProperties() {
 	m.List.SetSize(m.Width-h, m.Height-4)
 
 	//update the preview size
-	m.Preview.SetWidth(m.Width - h)
-	m.Preview.SetHeight(m.Height - 4)
+	m.Preview.SetWidth(m.Width - h - 4)
+	m.Preview.SetHeight(m.Height - 7)
 
 	m.Help.SetWidth(m.Width - h)
 
 	m.NoteTextArea.SetWidth(m.Width - h - 4)
-	m.NoteTextArea.SetHeight(m.Height - 8)
+	m.NoteTextArea.SetHeight(m.Height- 7)
 
 	// Update the model and list styles.
 	m.Style = NewStyles(m.DarkBG)

@@ -133,7 +133,7 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 	m.NoteTextArea.SetValue("")
 	m.PreviewOn = false
 	m.Dirty = false
-	m.StatusMsg = "Not save successful"
+	m.StatusMsg = "Note save successful"
 	m.State = stateIdle
 
 	return m, nil
